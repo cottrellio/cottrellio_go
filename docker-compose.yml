@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+# Production container. Builds in release mode and run. Project will be restarted on every abort.
+  prod:
+    hostname: app-prod
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: prod.Dockerfile
+    environment:
+      ENV: prod
+    ports:
+      - "8080:8080"
+    command: bash -c "/app/bin/linux_amd64/cottrellio-web"
+    # depends_on:
+    #   - mongo
+    
+# Development container. Runs in debug mode and live-reloading on every source file update. Also uses local mongo
+  dev:
+    hostname: app-dev
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    environment:
+      DEBUG: "true"
+      ENV: dev
+      MONGO_PROTOCOL: mongodb
+      MONGO_USERNAME: dev
+      MONGO_PASSWORD: password123
+      MONGO_HOST: mongo
+      MONGO_DATABASE: dev
+      MONGO_PORT: 27017
+      JWT_SECRET: your-256-bit-secret
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    command: bash -c "make serve"
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: dev
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    

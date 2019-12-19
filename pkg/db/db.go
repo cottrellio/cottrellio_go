@@ -16,6 +16,12 @@ type DB interface {
 	UserDetail(string) (*model.User, error)
 	UserUpdate(string, model.User) (*model.User, error)
 	UserDelete(string) error
+	// Post
+	PostCreate(model.Post) (*model.Post, error)
+	PostList(map[string][]string, map[string]string) ([]*model.Post, int64, error)
+	PostDetail(string) (*model.Post, error)
+	PostUpdate(string, model.Post) (*model.Post, error)
+	PostDelete(string) error
 }
 
 const (
